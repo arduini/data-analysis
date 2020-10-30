@@ -16,7 +16,7 @@ import java.util.Optional;
 @Service
 public class FilesFinderService {
 
-    public Optional<List<Path>> findFiles(final String path, final String fileType) {
+    public List<Path> findFiles(final String path, final String fileType) {
 
         final var filesList = new ArrayList<Path>();
 
@@ -28,6 +28,6 @@ public class FilesFinderService {
             log.error("E=error finding files in directory, path={}, fileType={}", path, fileType, e);
         }
 
-        return Optional.of(filesList);
+        return filesList;
     }
 }

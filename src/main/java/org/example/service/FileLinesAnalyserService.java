@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 
 @Slf4j
 @Service
@@ -38,6 +39,7 @@ public class FileLinesAnalyserService {
                 .fileName(file.getName())
                 .customersAmount(0)
                 .salesPeopleAmount(0)
+                .totalSalesBySalesMan(new HashMap<>())
                 .build();
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {

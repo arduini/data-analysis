@@ -19,59 +19,51 @@ public class FileDataLinePurchaseProcessor implements FileDataLineProcessorInter
 
     @Override
     public FileDataAnalysisReportVO processLine(FileDataAnalysisReportVO fileReport, String line) {
-        //return fileReport;
         // TODO validar linha via regex
 
         final var data = line.split(dataSeparator);
 
         final var sale = SaleVO.builder()
-                .saleId(Long.valueOf(data[1]))
-                .itens(processSaleItens(data[2]))
+                .id(Long.valueOf(data[1]))
+                .items(processSaleItens(data[2]))
                 .salesmanName(data[3])
                 .build();
 
-        final var totalSaleValue = calculateSaleTotalPrice(sale.getItens());
+        final var totalSaleValue = sale.calculateSaleTotalPrice();
+
+        if (fileReport.getTotalSalesBySalesMan().containsKey(sale.getSalesmanName())) {
+            fileReport.getTotalSalesBySalesMan().put(sale.getSalesmanName(), fileReport.getTotalSalesBySalesMan().get(sale.getSalesmanName()).add(totalSaleValue));
+        } else {
+            fileReport.getTotalSalesBySalesMan().put(sale.getSalesmanName(), totalSaleValue);
+        }
 
         if (Objects.isNull(fileReport.getMostExpensiveSalePrice()) || totalSaleValue.compareTo(fileReport.getMostExpensiveSalePrice()) == 1) {
             fileReport.setMostExpensiveSalePrice(totalSaleValue);
-            fileReport.setMostExpensiveSaleId(sale.getSaleId());
+            fileReport.setMostExpensiveSaleId(sale.getId());
         }
 
         return fileReport;
     }
 
-    private List<SaleItemVO> processSaleItens(String itensArray) {
+    private List<SaleItemVO> processSaleItens(String itemsArray) {
 
         // TODO refatorar pra usar regex
         // TODO validar linha via regex
         var list = new ArrayList<SaleItemVO>();
 
-        itensArray = itensArray.substring(1, itensArray.length()-1);
+        itemsArray = itemsArray.substring(1, itemsArray.length()-1);
+        final var items = itemsArray.split(",");
 
-        final var itens = itensArray.split(",");
+        for (String item:items) {
 
-        for (String s:itens) {
-
-            var itens2 = s.split("-");
+            var itemDetails = item.split("-");
             list.add(SaleItemVO.builder()
-                    .itemId(Long.valueOf(itens2[0]))
-                    .amount(Integer.valueOf(itens2[1]))
-                    .itemPrice(new BigDecimal(itens2[2]))
+                    .id(Long.valueOf(itemDetails[0]))
+                    .quantity(Integer.valueOf(itemDetails[1]))
+                    .price(new BigDecimal(itemDetails[2]))
                     .build());
         }
 
         return list;
-    }
-
-    private BigDecimal calculateSaleTotalPrice(final List<SaleItemVO> itens) {
-
-        var totalValue = BigDecimal.ZERO;
-
-        for (SaleItemVO saleitem:itens) {
-            var itemValue = saleitem.getItemPrice().multiply(new BigDecimal(saleitem.getAmount()));
-            totalValue = totalValue.add(itemValue);
-        }
-
-        return totalValue;
     }
 }

@@ -9,7 +9,12 @@ import java.math.BigDecimal;
 @Builder
 public class SaleItemVO {
 
-    private Long itemId;
-    private Integer amount;
-    private BigDecimal itemPrice;
+    private Long id;
+    private Integer quantity;
+    private BigDecimal price;
+
+    public BigDecimal calculateSaleItemTotalPrice() {
+
+        return price.multiply(new BigDecimal(quantity));
+    }
 }

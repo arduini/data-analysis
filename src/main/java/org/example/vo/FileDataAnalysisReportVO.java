@@ -6,7 +6,12 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -16,24 +21,26 @@ public class FileDataAnalysisReportVO {
     private Integer customersAmount;
     private Integer salesPeopleAmount;
     private Long mostExpensiveSaleId;
-    private BigDecimal mostExpensiveSalePrice;
-    // TODO: usar estrutura ordenada
+    private BigDecimal mostExpensiveSalePrice;;
+    private HashMap<String, BigDecimal> totalSalesBySalesMan;
 
     public List<String> toStringList() {
+
         final var stringList = new ArrayList<String>();
-        addNonNullInfoInList(stringList, "Quantidade de clientes do arquivo de entrada: ", customersAmount);
-        addNonNullInfoInList(stringList, "Quantidade de vendedores no arquivo de entrada: ", salesPeopleAmount);
-        addNonNullInfoInList(stringList, "Id da venda mais cara: ", mostExpensiveSaleId);
-        addNonNullInfoInList(stringList, "O Pior vendedor: ", "João");
-        //TODO listar pior vendedor
+        addNonEmptyInfoInStringList(stringList, "Quantidade de clientes do arquivo de entrada: ", customersAmount);
+        addNonEmptyInfoInStringList(stringList, "Quantidade de vendedores no arquivo de entrada: ", salesPeopleAmount);
+        addNonEmptyInfoInStringList(stringList, "Id da venda mais cara: ", mostExpensiveSaleId);
+        addNonEmptyInfoInStringList(stringList, "O Pior vendedor: ", getWorstSalesmanName());
 
         return stringList;
     }
 
-    private void addNonNullInfoInList(List<String> list, final String description, final Object value) {
-        if (value != null && !StringUtils.isEmpty(value.toString())) {
-            list.add(description + value.toString());
-        }
+    private String getWorstSalesmanName() {
+
+        return  totalSalesBySalesMan.entrySet().stream()
+                .min(Comparator.comparing(Map.Entry::getValue))
+                .orElseGet(null)
+                .getKey();
     }
 
     public FileDataAnalysisReportVO incrementCustomersAmount() {
@@ -46,5 +53,9 @@ public class FileDataAnalysisReportVO {
         return this;
     }
 
-
+    private void addNonEmptyInfoInStringList(List<String> list, final String description, final Object value) {
+        if (Objects.nonNull(value) && !StringUtils.isEmpty(value.toString())) {
+            list.add(description + value.toString());
+        }
+    }
 }

@@ -2,7 +2,6 @@ package org.example.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.exception.DataFileNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,16 +29,15 @@ public class FilesAnalyserService {
     @Value("${data-analysis.file.output.type}")
     private String outputType;
 
-    public void findAndProcessFiles() throws DataFileNotFoundException {
+    public void findAndProcessFiles() {
 
         fileFinderService.findFiles(inputPath, inputType)
-            .orElseThrow(DataFileNotFoundException::new)
-            .forEach(this::processFile);
+                .forEach(this::processFile);
     }
 
-    private void processFile(Path file) {
+    private void processFile(Path filePath) {
 
-        Optional.of(file)
+        Optional.of(filePath)
             .map(fileAnalyserService::process)
             .map(f -> fileReportGeneratorService.generate(f, outputPath, outputType));
     }
