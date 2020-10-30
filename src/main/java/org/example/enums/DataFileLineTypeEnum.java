@@ -11,7 +11,7 @@ public enum DataFileLineTypeEnum {
 
     SALESMAN("001"),
     CUSTOMER("002"),
-    PURCHASE("003");
+    SALE("003");
 
     private final String lineCode;
 

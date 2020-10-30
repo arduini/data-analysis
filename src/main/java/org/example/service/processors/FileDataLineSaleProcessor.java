@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-public class FileDataLinePurchaseProcessor implements FileDataLineProcessorInterface{
+public class FileDataLineSaleProcessor implements FileDataLineProcessorInterface{
 
     @Value("${data-analysis.file.separator}")
     private String dataSeparator;

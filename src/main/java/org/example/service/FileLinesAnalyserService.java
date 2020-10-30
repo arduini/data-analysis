@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.enums.DataFileLineTypeEnum;
 import org.example.service.processors.FileDataLineCustomerProcessor;
 import org.example.service.processors.FileDataLineProcessorInterface;
-import org.example.service.processors.FileDataLinePurchaseProcessor;
+import org.example.service.processors.FileDataLineSaleProcessor;
 import org.example.service.processors.FileDataLineSalesmanProcessor;
 import org.example.vo.FileDataAnalysisReportVO;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +25,7 @@ public class FileLinesAnalyserService {
 
     private final FileDataLineSalesmanProcessor fileDataLineSalesmanProcessor;
     private final FileDataLineCustomerProcessor fileDataLineCustomerProcessor;
-    private final FileDataLinePurchaseProcessor fileDataLinePurchaseProcessor;
+    private final FileDataLineSaleProcessor fileDataLineSaleProcessor;
 
     @Value("${data-analysis.file.separator}")
     private String dataSeparator;
@@ -70,8 +70,8 @@ public class FileLinesAnalyserService {
             case CUSTOMER:
                 lineProcessor = fileDataLineCustomerProcessor;
                 break;
-            case PURCHASE:
-                lineProcessor = fileDataLinePurchaseProcessor;
+            case SALE:
+                lineProcessor = fileDataLineSaleProcessor;
                 break;
             default:
                 log.error("E=File data line type unknown!!, line={}", line);
