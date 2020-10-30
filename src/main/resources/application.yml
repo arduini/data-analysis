@@ -1,0 +1,13 @@
+spring.main.web-application-type: NONE
+
+data-analysis:
+  job.interval.cron: "* * * * * ?"
+  file:
+    path: "/home/s2it_aarduini/workspace/teste"
+    separator: "ç"
+    input:
+      path: "${data-analysis.file.path}/data/in"
+      type: ".dat"
+    output:
+      path: "${data-analysis.file.path}/data/out"
+      type: ".done.dat"
