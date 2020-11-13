@@ -2,6 +2,9 @@
 Aplicação para analise de dados de vendas em arquivo texto padronizado.
 Busca arquivos padronizados no diretório de entrada ("/in") e grava um relatório em um arquivo no diretório de saída ("/out").
 
+Ao rodar essa aplicação espera-se que exista um diretório base (basefolder) com um subdiretório "/in" que contenha arquivos do tipo ".dat" que tenha linhas com informações de 
+vendas e vendedores no formato esperado.
+
 ## Rodando localmente
 Para rodar a aplicação em sua máquina siga os passos: 
    ```sh
