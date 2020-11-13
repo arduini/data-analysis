@@ -4,20 +4,27 @@ Busca arquivos padronizados no diretório de entrada ("/in") e grava um relatór
 
 ## Rodando localmente
 Para rodar a aplicação em sua máquina siga os passos: 
-
-   ``` ./gradlew bootRun --args='--data-analysis.file.path=basefolder' ```
+   ```sh
+    ./gradlew bootRun --args='--data-analysis.file.path=basefolder' 
+   ```
 
 ## Rodando com o Docker
 Para rodar com o Docler: 
 - Buildar a aplicação
-    ``` ./gradlew build ```
+    ```sh 
+     ./gradlew build
+    ```
 - Criar a imagem Docker
-    ``` docker build -t nome_imagem . ```
+    ```sh
+     docker build -t nome_imagem . 
+   ```
 - Rodar a imagem 
-    ``` docker run nome_imagem ```
+    ```sh
+     docker run nome_imagem 
+  ```
 
 ## Qualidade
-- Para executar os testes unitários
+- Para executar os testes unitários   
    ```sh
     ./gradlew test
    ```
