@@ -1,5 +1,6 @@
 package org.example.service.processors;
 
+import lombok.NonNull;
 import org.example.vo.FileDataAnalysisReportVO;
 import org.springframework.stereotype.Service;
 
@@ -7,8 +8,7 @@ import org.springframework.stereotype.Service;
 public class FileDataLineCustomerProcessor implements FileDataLineProcessorInterface{
 
     @Override
-    public FileDataAnalysisReportVO processLine(FileDataAnalysisReportVO fileReport, String line) {
-        // TODO validar linha via regex
+    public FileDataAnalysisReportVO processLine(@NonNull final FileDataAnalysisReportVO fileReport, @NonNull final String line) {
         return fileReport.incrementCustomersAmount();
     }
 }

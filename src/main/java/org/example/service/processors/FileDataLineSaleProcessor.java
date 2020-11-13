@@ -1,42 +1,53 @@
 package org.example.service.processors;
 
+import lombok.NonNull;
+import org.example.exception.FileLineValidationException;
 import org.example.vo.FileDataAnalysisReportVO;
 import org.example.vo.SaleItemVO;
 import org.example.vo.SaleVO;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.example.enums.DataFileLineTypeEnum.SALE;
 
 @Service
 public class FileDataLineSaleProcessor implements FileDataLineProcessorInterface{
 
-    @Value("${data-analysis.file.separator}")
-    private String dataSeparator;
+    private final static String SALE_ITEM_REGEX_PATTERN = "([^,]+)";
+    private final static String SALE_ITEM_DETAIL_REGEX_PATTERN = "^(\\d+)\\-(\\d+)\\-(\\d+\\.*\\d*)$";
 
     @Override
-    public FileDataAnalysisReportVO processLine(FileDataAnalysisReportVO fileReport, String line) {
-        // TODO validar linha via regex
+    public FileDataAnalysisReportVO processLine(@NonNull final FileDataAnalysisReportVO fileReport, @NonNull final String line) {
 
-        final var data = line.split(dataSeparator);
+        Matcher saleLineMatcher = Pattern.compile(SALE.getRegex()).matcher(line);
+
+        if (!saleLineMatcher.find()) {
+            throw new FileLineValidationException("File line structure unexpected: " + line);
+        }
 
         final var sale = SaleVO.builder()
-                .id(Long.valueOf(data[1]))
-                .items(processSaleItens(data[2]))
-                .salesmanName(data[3])
+                .id(Long.valueOf(saleLineMatcher.group(2)))
+                .items(processSaleItems(saleLineMatcher.group(3)))
+                .salesmanName(saleLineMatcher.group(4))
                 .build();
 
         final var totalSaleValue = sale.calculateSaleTotalPrice();
 
+        // Store the total sum of sales by salesman
         if (fileReport.getTotalSalesBySalesMan().containsKey(sale.getSalesmanName())) {
-            fileReport.getTotalSalesBySalesMan().put(sale.getSalesmanName(), fileReport.getTotalSalesBySalesMan().get(sale.getSalesmanName()).add(totalSaleValue));
+            fileReport.getTotalSalesBySalesMan().put(sale.getSalesmanName(),
+                    fileReport.getTotalSalesBySalesMan().get(sale.getSalesmanName()).add(totalSaleValue));
         } else {
             fileReport.getTotalSalesBySalesMan().put(sale.getSalesmanName(), totalSaleValue);
         }
 
+        // Store the most expensive sale information so far
         if (Objects.isNull(fileReport.getMostExpensiveSalePrice()) || totalSaleValue.compareTo(fileReport.getMostExpensiveSalePrice()) == 1) {
             fileReport.setMostExpensiveSalePrice(totalSaleValue);
             fileReport.setMostExpensiveSaleId(sale.getId());
@@ -45,25 +56,27 @@ public class FileDataLineSaleProcessor implements FileDataLineProcessorInterface
         return fileReport;
     }
 
-    private List<SaleItemVO> processSaleItens(String itemsArray) {
+    private List<SaleItemVO> processSaleItems(String itemsArray) {
 
-        // TODO refatorar pra usar regex
-        // TODO validar linha via regex
-        var list = new ArrayList<SaleItemVO>();
+        var saleItemsList = new ArrayList<SaleItemVO>();
+        Matcher saleItemMatcher = Pattern.compile(SALE_ITEM_REGEX_PATTERN).matcher(itemsArray);
 
-        itemsArray = itemsArray.substring(1, itemsArray.length()-1);
-        final var items = itemsArray.split(",");
+        while (saleItemMatcher.find()) {
+            var saleItemDetailsStr = saleItemMatcher.group();
+            Matcher saleItemDetailsMatcher = Pattern.compile(SALE_ITEM_DETAIL_REGEX_PATTERN).matcher(saleItemDetailsStr);
 
-        for (String item:items) {
-
-            var itemDetails = item.split("-");
-            list.add(SaleItemVO.builder()
-                    .id(Long.valueOf(itemDetails[0]))
-                    .quantity(Integer.valueOf(itemDetails[1]))
-                    .price(new BigDecimal(itemDetails[2]))
-                    .build());
+            if(saleItemDetailsMatcher.find()) {
+                saleItemsList.add(SaleItemVO.builder()
+                        .id(Long.valueOf(saleItemDetailsMatcher.group(1)))
+                        .quantity(Integer.valueOf(saleItemDetailsMatcher.group(2)))
+                        .price(new BigDecimal(saleItemDetailsMatcher.group(3)))
+                        .build());
+            }
+            else {
+                throw new FileLineValidationException("File line structure unexpected");
+            }
         }
 
-        return list;
+        return saleItemsList;
     }
 }

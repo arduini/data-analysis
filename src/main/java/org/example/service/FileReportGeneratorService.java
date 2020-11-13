@@ -1,6 +1,8 @@
 package org.example.service;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.example.exception.FileReportGenerationException;
 import org.example.vo.FileDataAnalysisReportVO;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +17,18 @@ import java.nio.file.Paths;
 @Service
 public class FileReportGeneratorService {
 
-    public File generate(final FileDataAnalysisReportVO fileDataAnalysisReportVO, final String path, final String fileType) {
+    public File generate(@NonNull final FileDataAnalysisReportVO fileDataAnalysisReportVO, @NonNull final String path, @NonNull final String fileType) {
 
         final var filePath = path + File.separator + fileDataAnalysisReportVO.getFileName() + fileType;
         Path file = Paths.get(filePath);
+        file.toFile().getParentFile().mkdirs();
 
-        // TODO se o arquivo já existir?
-        // TODO melhorar isso aqui
         try {
             return Files.write(file, fileDataAnalysisReportVO.toStringList(), StandardCharsets.UTF_8).toFile();
-        } catch (IOException e) {
-            return null;
+        }
+        catch (IOException e) {
+            log.error("E=Error generating report file, file={}", fileDataAnalysisReportVO.getFileName(), e);
+            throw new FileReportGenerationException("Error generating report file", e);
         }
     }
 }

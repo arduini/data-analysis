@@ -1,14 +1,15 @@
 package org.example.service;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.enums.DataFileLineTypeEnum;
+import org.example.exception.FileProcessingException;
+import org.example.exception.FileLineValidationException;
 import org.example.service.processors.FileDataLineCustomerProcessor;
 import org.example.service.processors.FileDataLineProcessorInterface;
 import org.example.service.processors.FileDataLineSaleProcessor;
 import org.example.service.processors.FileDataLineSalesmanProcessor;
 import org.example.vo.FileDataAnalysisReportVO;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -17,6 +18,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.regex.Pattern;
+
+import static org.example.enums.DataFileLineTypeEnum.CUSTOMER;
+import static org.example.enums.DataFileLineTypeEnum.SALE;
+import static org.example.enums.DataFileLineTypeEnum.SALESMAN;
 
 @Slf4j
 @Service
@@ -27,10 +33,7 @@ public class FileLinesAnalyserService {
     private final FileDataLineCustomerProcessor fileDataLineCustomerProcessor;
     private final FileDataLineSaleProcessor fileDataLineSaleProcessor;
 
-    @Value("${data-analysis.file.separator}")
-    private String dataSeparator;
-
-    public FileDataAnalysisReportVO process(final Path filePath) {
+    public FileDataAnalysisReportVO process(@NonNull final Path filePath) {
 
         final var file = filePath.toFile();
         log.info("I=processing file: {}", file);
@@ -45,37 +48,40 @@ public class FileLinesAnalyserService {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
+                log.debug("D=Processing file line, line={}", line);
                 processLineByCode(fileReport, line);
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        // TODO tratar excecoes
+        catch (FileNotFoundException e) {
+            log.error("E=Error reading file, file={}", filePath, e);
+            throw new FileProcessingException("Error reading file", e);
+        }
+        catch (IOException e) {
+            log.error("E=Error reading line", e);
+            throw new FileProcessingException("Error reading line", e);
+        }
+        catch (FileLineValidationException e) {
+            log.error("E=Error processing line", e);
+            throw new FileProcessingException("Error processing line", e);
+        }
 
         return fileReport;
     }
 
-    private void processLineByCode(FileDataAnalysisReportVO fileReport, final String line) {
-
-        String[] values = line.split(dataSeparator);
-        var code = DataFileLineTypeEnum.getByCode(values[0]);
+    private void processLineByCode(@NonNull final FileDataAnalysisReportVO fileReport, @NonNull final String line) {
 
         FileDataLineProcessorInterface lineProcessor;
-        switch (code) {
-            case SALESMAN:
-                lineProcessor = fileDataLineSalesmanProcessor;
-                break;
-            case CUSTOMER:
-                lineProcessor = fileDataLineCustomerProcessor;
-                break;
-            case SALE:
-                lineProcessor = fileDataLineSaleProcessor;
-                break;
-            default:
-                log.error("E=File data line type unknown!!, line={}", line);
-                return;
+        if(Pattern.compile(SALESMAN.getRegex()).matcher(line).find()) {
+            lineProcessor = fileDataLineSalesmanProcessor;
+        }
+        else if (Pattern.compile(CUSTOMER.getRegex()).matcher(line).find()) {
+            lineProcessor = fileDataLineCustomerProcessor;
+        }
+        else if (Pattern.compile(SALE.getRegex()).matcher(line).find()) {
+            lineProcessor = fileDataLineSaleProcessor;
+        }
+        else {
+            throw new FileLineValidationException("File line structure unexpected: " + line);
         }
 
         lineProcessor.processLine(fileReport, line);

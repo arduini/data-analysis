@@ -1,5 +1,6 @@
-package org.example.service;
+package org.example.utils;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -10,13 +11,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
-public class FilesFinderService {
+public class FilesFinderUtils {
 
-    public List<Path> findFiles(final String path, final String fileType) {
+    public List<Path> findFiles(@NonNull  final String path, @NonNull final String fileType) {
 
         final var filesList = new ArrayList<Path>();
 

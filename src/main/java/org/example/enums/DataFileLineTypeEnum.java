@@ -9,17 +9,9 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum DataFileLineTypeEnum {
 
-    SALESMAN("001"),
-    CUSTOMER("002"),
-    SALE("003");
+    SALESMAN("^(001)\\ç(\\d+)\\ç([ A-Za-z]+)\\ç(\\d+\\.*\\d*)$"),
+    CUSTOMER("^(002)\\ç(\\d+)\\ç([ A-Za-z]+)\\ç([ A-Za-z]+)$"),
+    SALE("^(003)\\ç(\\d+)\\ç\\[(.+)\\]\\ç([ A-Za-z]+)$");
 
-    private final String lineCode;
-
-    public static DataFileLineTypeEnum getByCode(final String code) {
-
-        return Arrays.stream(values())
-                .filter(value -> value.getLineCode().equals(code))
-                .findFirst()
-                .orElse(null);
-    }
+    private final String regex;
 }

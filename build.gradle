@@ -15,8 +15,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     
     compileOnly("org.projectlombok:lombok")
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
 
     annotationProcessor("org.projectlombok:lombok")
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile("org.mockito:mockito-junit-jupiter:3.5.2")
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.6.2")
 }

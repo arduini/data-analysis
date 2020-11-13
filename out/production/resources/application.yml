@@ -3,7 +3,7 @@ spring.main.web-application-type: NONE
 data-analysis:
   job.interval.cron: "* * * * * ?"
   file:
-    path: "/home/user"
+    path: "."
     input:
       path: "${data-analysis.file.path}/data/in"
       type: ".dat"
