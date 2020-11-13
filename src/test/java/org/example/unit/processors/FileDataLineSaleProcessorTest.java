@@ -77,14 +77,17 @@ public class FileDataLineSaleProcessorTest {
                 .totalSalesBySalesMan(new HashMap<>())
                 .build();
 
-        final var line = "003ç10ç[1-10-100,2-30-2.50,3-40-3.10]çPedro";
+        final var line = "003ç01ç[1-10-100,2-30-2.50,3-40-3.10]çPedro";
         fileDataLineSaleProcessor.processLine(fileReportVO, line);
 
-        final var line2 = "003ç08ç[1-34-10,2-33-1.50,3-40-0.10]çPedro";
+        final var line2 = "003ç02ç[1-34-10]çJose";
         fileDataLineSaleProcessor.processLine(fileReportVO, line2);
 
-        assertEquals(10L, fileReportVO.getMostExpensiveSaleId());
-        assertEquals(new BigDecimal(5000), fileReportVO.getMostExpensiveSalePrice());
-        assertEquals("Pedro", fileReportVO.getWorstSalesmanName());
+        final var line3 = "003ç03ç[1-340-100]çJoao";
+        fileDataLineSaleProcessor.processLine(fileReportVO, line3);
+
+        assertEquals(3L, fileReportVO.getMostExpensiveSaleId());
+        assertEquals(new BigDecimal(34000), fileReportVO.getMostExpensiveSalePrice());
+        assertEquals("Jose", fileReportVO.getWorstSalesmanName());
     }
 }
