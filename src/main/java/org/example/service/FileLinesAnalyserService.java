@@ -3,12 +3,10 @@ package org.example.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.exception.FileProcessingException;
 import org.example.exception.FileLineValidationException;
-import org.example.service.processors.FileDataLineCustomerProcessor;
+import org.example.exception.FileProcessingException;
+import org.example.factory.DataLineProcessorFactory;
 import org.example.service.processors.FileDataLineProcessorInterface;
-import org.example.service.processors.FileDataLineSaleProcessor;
-import org.example.service.processors.FileDataLineSalesmanProcessor;
 import org.example.vo.FileDataAnalysisReportVO;
 import org.springframework.stereotype.Service;
 
@@ -18,20 +16,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.regex.Pattern;
-
-import static org.example.enums.DataFileLineTypeEnum.CUSTOMER;
-import static org.example.enums.DataFileLineTypeEnum.SALE;
-import static org.example.enums.DataFileLineTypeEnum.SALESMAN;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileLinesAnalyserService {
 
-    private final FileDataLineSalesmanProcessor fileDataLineSalesmanProcessor;
-    private final FileDataLineCustomerProcessor fileDataLineCustomerProcessor;
-    private final FileDataLineSaleProcessor fileDataLineSaleProcessor;
+    private final DataLineProcessorFactory dataLineProcessorFactory;
 
     public FileDataAnalysisReportVO process(@NonNull final Path filePath) {
 
@@ -70,20 +61,9 @@ public class FileLinesAnalyserService {
 
     private void processLineByCode(@NonNull final FileDataAnalysisReportVO fileReport, @NonNull final String line) {
 
-        FileDataLineProcessorInterface lineProcessor;
-        if(Pattern.compile(SALESMAN.getRegex()).matcher(line).find()) {
-            lineProcessor = fileDataLineSalesmanProcessor;
-        }
-        else if (Pattern.compile(CUSTOMER.getRegex()).matcher(line).find()) {
-            lineProcessor = fileDataLineCustomerProcessor;
-        }
-        else if (Pattern.compile(SALE.getRegex()).matcher(line).find()) {
-            lineProcessor = fileDataLineSaleProcessor;
-        }
-        else {
-            throw new FileLineValidationException("File line structure unexpected: " + line);
-        }
+        final FileDataLineProcessorInterface lineProcessor = dataLineProcessorFactory.getDataLineProcessor(line);
 
+        lineProcessor.validate(line);
         lineProcessor.processLine(fileReport, line);
     }
 }
